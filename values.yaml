@@ -1,204 +1,112 @@
-##
-## Configuration settings related to Velero installation namespace
-##
-namespace:
- labels: {}
- # Enforce Pod Security Standards with Namespace Labels
- # https://kubernetes.io/docs/tasks/configure-pod-container/enforce-standards-namespace-labels/
- # - key: pod-security.kubernetes.io/enforce
- #   value: privileged
- # - key: pod-security.kubernetes.io/enforce-version
- #   value: latest
- # - key: pod-security.kubernetes.io/audit
- #   value: privileged
- # - key: pod-security.kubernetes.io/audit-version
- #   value: latest
- # - key: pod-security.kubernetes.io/warn
- #   value: privileged
- # - key: pod-security.kubernetes.io/warn-version
- #   value: latest
-##
-## End of namespace-related settings.
-##
-##
-## Configuration settings that directly affect the Velero deployment YAML.
-##
 image:
- repository: velero/velero
- tag: v1.14.1
- pullPolicy: IfNotPresent
- imagePullSecrets: []
-nameOverride: ""
-fullnameOverride: ""
-annotations: {}
-secretAnnotations: {}
-labels: {}
-podAnnotations: {}
-podLabels: {}
+  repository: velero/velero
+  tag: v1.14.1
+  pullPolicy: IfNotPresent
+
+initContainers:
+  - name: velero-plugin-for-local
+    image: openebs/velero-plugin:latest
+    imagePullPolicy: IfNotPresent
+    volumeMounts:
+      - mountPath: /target
+        name: plugins
+
+credentials:
+  useSecret: false
+
+configuration:
+  backupStorageLocation:
+    - name: default
+      provider: openebs.io/localpath
+      default: true
+      accessMode: ReadWrite
+      config:
+        path: /data/velero/backups
+      annotations: {}
+
+  volumeSnapshotLocation:
+    - name: default
+      provider: openebs.io/localpath
+      config: {}
+      annotations: {}
+
+  defaultBackupStorageLocation: default
+  defaultVolumeSnapshotLocations: default
+
+rbac:
+  create: true
+  clusterAdministrator: true
+  clusterAdministratorName: cluster-admin
+
+serviceAccount:
+  server:
+    create: true
+
+metrics:
+  enabled: true
+  scrapeInterval: 30s
+  scrapeTimeout: 10s
+  service:
+    annotations: {}
+    labels: {}
+    podAnnotations:
+      prometheus.io/scrape: "true"
+      prometheus.io/port: "8085"
+      prometheus.io/path: "/metrics"
+  serviceMonitor:
+    autodetect: true
+    enabled: false
+    annotations: {}
+    additionalLabels: {}
+  nodeAgentPodMonitor:
+    autodetect: true
+    enabled: false
+    annotations: {}
+    additionalLabels: {}
+  prometheusRule:
+    autodetect: false
+    enabled: false
+    additionalLabels: {}
+    spec: []
+
+extraVolumes: []
+extraVolumeMounts: []
+
 resources: {}
 upgradeJobResources: {}
-upgradeCRDsJob:
- extraVolumes: []
- extraVolumeMounts: []
- extraEnvVars: {}
+
+backupSyncPeriod:
+fsBackupTimeout:
+defaultBackupTTL:
+defaultItemOperationTimeout:
+
+logLevel: info
+restoreOnlyMode: false
+pluginDir: /plugins
+metricsAddress: :8085
+
+deployRestic: false
+deployNodeAgent: false
+backupsEnabled: true
+snapshotsEnabled: true
+upgradeCRDs: true
+cleanUpCRDs: false
+
+nodeAgent:
+  podVolumePath: /var/lib/kubelet/pods
+  useScratchEmptyDir: true
+  podSecurityContext:
+    runAsUser: 0
+
 dnsPolicy: ClusterFirst
-initContainers: []
-podSecurityContext: {}
-containerSecurityContext: {}
-lifecycle: {}
-priorityClassName: ""
-terminationGracePeriodSeconds: 3600
-livenessProbe:
- httpGet:
-   path: /metrics
-   port: http-monitoring
-   scheme: HTTP
- initialDelaySeconds: 10
- periodSeconds: 30
- timeoutSeconds: 5
- successThreshold: 1
- failureThreshold: 5
-readinessProbe:
- httpGet:
-   path: /metrics
-   port: http-monitoring
-   scheme: HTTP
- initialDelaySeconds: 10
- periodSeconds: 30
- timeoutSeconds: 5
- successThreshold: 1
- failureThreshold: 5
 tolerations: []
 affinity: {}
 nodeSelector: {}
 dnsConfig: {}
-extraVolumes: []
-extraVolumeMounts: []
-extraObjects: []
-metrics:
- enabled: true
- scrapeInterval: 30s
- scrapeTimeout: 10s
- service:
-   annotations: {}
-   labels: {}
- podAnnotations:
-   prometheus.io/scrape: "true"
-   prometheus.io/port: "8085"
-   prometheus.io/path: "/metrics"
- serviceMonitor:
-   autodetect: true
-   enabled: false
-   annotations: {}
-   additionalLabels: {}
-nodeAgentPodMonitor:
- autodetect: true
- enabled: false
- annotations: {}
- additionalLabels: {}
-prometheusRule:
- autodetect: true
- enabled: false
- additionalLabels: {}
- spec: []
-kubectl:
- image:
-   repository: docker.io/bitnami/kubectl
- containerSecurityContext: {}
- resources: {}
- annotations: {}
- labels: {}
-upgradeCRDs: true
-cleanUpCRDs: false
-##
-## End of deployment-related settings.
-##
-##
-## Parameters for the `default` BackupStorageLocation and VolumeSnapshotLocation,
-## and additional server settings.
-##
-configuration:
- # BackupStorageLocation settings
- backupStorageLocation:
- - name: default
-   provider: openebs.io/localpath
-   config:
-     path: /data/velero/backups
-   accessMode: ReadWrite
-   default: true
-   annotations: {}
 
- # VolumeSnapshotLocation settings
- volumeSnapshotLocation:
- - name: default
-   provider: openebs.io/localpath
-   config: {}
-   annotations: {}
-
- # Additional server-level settings
- uploaderType:
- backupSyncPeriod:
- fsBackupTimeout:
- clientBurst:
- clientPageSize:
- clientQPS:
- defaultBackupStorageLocation: default
- defaultItemOperationTimeout:
- defaultBackupTTL:
- defaultVolumeSnapshotLocations:
- disableControllers:
- disableInformerCache: false
- garbageCollectionFrequency:
- logFormat:
- logLevel:
- metricsAddress:
- pluginDir:
- profilerAddress:
- restoreOnlyMode:
- restoreResourcePriorities:
- storeValidationFrequency:
- terminatingResourceTimeout:
- defaultSnapshotMoveData:
- defaultVolumesToFsBackup:
- defaultRepoMaintainFrequency:
-
-rbac:
- create: true
- clusterAdministrator: true
- clusterAdministratorName: cluster-admin
-serviceAccount:
- server:
-   create: true
-   annotations:
-   labels:
-   imagePullSecrets: []
-credentials:
- useSecret: false  # Set to false for local storage (no cloud provider credentials)
- extraEnvVars: {}
- extraSecretRef: ""
-backupsEnabled: true
-snapshotsEnabled: true
-deployNodeAgent: false
-nodeAgent:
- podVolumePath: /var/lib/kubelet/pods
- useScratchEmptyDir: true
- resources: {}
- tolerations: []
- annotations: {}
- labels: {}
- extraVolumes: []
- extraVolumeMounts: []
- extraEnvVars: {}
- dnsPolicy: ClusterFirst
- podSecurityContext:
-   runAsUser: 0
- containerSecurityContext: {}
- lifecycle: {}
- nodeSelector: {}
- affinity: {}
- dnsConfig: {}
+# Optional: allow backup schedules here if you want automatic recurring backups
 schedules: {}
-configMaps: {}
-##
-## End of additional Velero resource settings.
-##
+
+# Optional: disable cloud provider stuff entirely
+credentials:
+  useSecret: false
