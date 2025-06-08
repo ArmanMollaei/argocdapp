@@ -38,8 +38,7 @@ configuration:
       config: {}
 
   defaultBackupStorageLocation: default
-  defaultVolumeSnapshotLocations: default
-
+  defaultVolumeSnapshotLocations: openebs.io/localpath=default
 deployNodeAgent: false
 
 upgradeCRDs: true
