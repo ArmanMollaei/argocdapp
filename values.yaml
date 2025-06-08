@@ -1,3 +1,13 @@
+kubectl:
+ image:
+   repository: docker.io/bitnami/kubectl
+   # tag: "1.27.4"           # Optional: match your Kubernetes version
+   # digest: sha256:...      # Optional
+ labels: {}
+ annotations: {}
+ containerSecurityContext: {}
+ resources: {}
+
 image:
   repository: velero/velero
   tag: v1.14.1
