@@ -1,0 +1,64 @@
+image:
+  repository: velero/velero
+  tag: v1.14.1
+  pullPolicy: IfNotPresent
+
+initContainers:
+  - name: velero-plugin-for-local
+    image: openebs/velero-plugin:latest
+    imagePullPolicy: IfNotPresent
+    volumeMounts:
+      - mountPath: /target
+        name: plugins
+
+credentials:
+  useSecret: false
+
+rbac:
+  create: true
+  clusterAdministrator: true
+  clusterAdministratorName: cluster-admin
+
+serviceAccount:
+  server:
+    create: true
+
+configuration:
+  backupStorageLocation:
+    - name: default
+      provider: openebs.io/localpath
+      default: true
+      config:
+        path: /data/velero/backups
+      accessMode: ReadWrite
+
+  volumeSnapshotLocation:
+    - name: default
+      provider: openebs.io/localpath
+      config: {}
+
+  defaultBackupStorageLocation: default
+  defaultVolumeSnapshotLocations: default
+
+deployNodeAgent: false
+
+upgradeCRDs: true
+snapshotsEnabled: true
+backupsEnabled: true
+
+metrics:
+  enabled: true
+  prometheusRule:
+    enabled: false
+    autodetect: false
+    spec: []
+  serviceMonitor:
+    enabled: false
+
+kubectl:
+  image:
+    repository: docker.io/bitnami/kubectl
+  labels: {}
+  annotations: {}
+  containerSecurityContext: {}
+  resources: {}
