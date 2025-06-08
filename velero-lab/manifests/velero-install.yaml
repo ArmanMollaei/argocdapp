@@ -1,0 +1,32 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: velero
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: velero
+  namespace: velero
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      name: velero
+  template:
+    metadata:
+      labels:
+        name: velero
+    spec:
+      containers:
+        - name: velero
+          image: velero/velero:v1.12.3
+          args:
+            - server
+          volumeMounts:
+            - mountPath: /plugins
+              name: plugins
+      volumes:
+        - name: plugins
+          emptyDir: {}
