@@ -1,17 +1,10 @@
-kubectl:
- image:
-   repository: docker.io/bitnami/kubectl
-   # tag: "1.27.4"           # Optional: match your Kubernetes version
-   # digest: sha256:...      # Optional
- labels: {}
- annotations: {}
- containerSecurityContext: {}
- resources: {}
-
 image:
   repository: velero/velero
   tag: v1.14.1
   pullPolicy: IfNotPresent
+
+nameOverride: ""
+fullnameOverride: ""
 
 initContainers:
   - name: velero-plugin-for-local
@@ -24,6 +17,19 @@ initContainers:
 credentials:
   useSecret: false
 
+rbac:
+  create: true
+  clusterAdministrator: true
+  clusterAdministratorName: cluster-admin
+
+serviceAccount:
+  server:
+    create: true
+    name: ""
+    annotations: {}
+    labels: {}
+    imagePullSecrets: []
+
 configuration:
   backupStorageLocation:
     - name: default
@@ -33,24 +39,41 @@ configuration:
       config:
         path: /data/velero/backups
       annotations: {}
-
   volumeSnapshotLocation:
     - name: default
       provider: openebs.io/localpath
       config: {}
       annotations: {}
-
   defaultBackupStorageLocation: default
   defaultVolumeSnapshotLocations: default
 
-rbac:
-  create: true
-  clusterAdministrator: true
-  clusterAdministratorName: cluster-admin
+deployRestic: false
+deployNodeAgent: false
+backupsEnabled: true
+snapshotsEnabled: true
+upgradeCRDs: true
+cleanUpCRDs: false
 
-serviceAccount:
-  server:
-    create: true
+nodeAgent:
+  podVolumePath: /var/lib/kubelet/pods
+  useScratchEmptyDir: true
+  priorityClassName: ""
+  resources: {}
+  tolerations: []
+  annotations: {}
+  labels: {}
+  extraVolumes: []
+  extraVolumeMounts: []
+  extraEnvVars: {}
+  extraArgs: []
+  dnsPolicy: ClusterFirst
+  podSecurityContext:
+    runAsUser: 0
+  containerSecurityContext: {}
+  lifecycle: {}
+  nodeSelector: {}
+  affinity: {}
+  dnsConfig: {}
 
 metrics:
   enabled: true
@@ -79,44 +102,62 @@ metrics:
     additionalLabels: {}
     spec: []
 
-extraVolumes: []
-extraVolumeMounts: []
+upgradeCRDsJob:
+  extraVolumes: []
+  extraVolumeMounts: []
+  extraEnvVars: {}
 
-resources: {}
-upgradeJobResources: {}
+livenessProbe:
+  httpGet:
+    path: /metrics
+    port: http-monitoring
+    scheme: HTTP
+  initialDelaySeconds: 10
+  periodSeconds: 30
+  timeoutSeconds: 5
+  successThreshold: 1
+  failureThreshold: 5
 
-backupSyncPeriod:
-fsBackupTimeout:
-defaultBackupTTL:
-defaultItemOperationTimeout:
-
-logLevel: info
-restoreOnlyMode: false
-pluginDir: /plugins
-metricsAddress: :8085
-
-deployRestic: false
-deployNodeAgent: false
-backupsEnabled: true
-snapshotsEnabled: true
-upgradeCRDs: true
-cleanUpCRDs: false
-
-nodeAgent:
-  podVolumePath: /var/lib/kubelet/pods
-  useScratchEmptyDir: true
-  podSecurityContext:
-    runAsUser: 0
+readinessProbe:
+  httpGet:
+    path: /metrics
+    port: http-monitoring
+    scheme: HTTP
+  initialDelaySeconds: 10
+  periodSeconds: 30
+  timeoutSeconds: 5
+  successThreshold: 1
+  failureThreshold: 5
 
 dnsPolicy: ClusterFirst
 tolerations: []
 affinity: {}
 nodeSelector: {}
 dnsConfig: {}
+podSecurityContext: {}
+containerSecurityContext: {}
+extraVolumes: []
+extraVolumeMounts: []
+lifecycle: {}
+priorityClassName: ""
+terminationGracePeriodSeconds: 3600
+annotations: {}
+secretAnnotations: {}
+labels: {}
+podAnnotations: {}
+podLabels: {}
 
-# Optional: allow backup schedules here if you want automatic recurring backups
+resources: {}
+upgradeJobResources: {}
+
+kubectl:
+  image:
+    repository: docker.io/bitnami/kubectl
+  labels: {}
+  annotations: {}
+  containerSecurityContext: {}
+  resources: {}
+
+extraObjects: []
 schedules: {}
-
-# Optional: disable cloud provider stuff entirely
-credentials:
-  useSecret: false
+configMaps: {}
