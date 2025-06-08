@@ -20,13 +20,15 @@ spec:
         name: velero
     spec:
       containers:
-        - name: velero
-          image: velero/velero:v1.12.3
-          args:
-            - server
-          volumeMounts:
-            - mountPath: /plugins
-              name: plugins
+      - name: velero
+        image: velero/velero:v1.12.3
+        command:
+        - /velero
+        args:
+        - server
+        volumeMounts:
+        - mountPath: /plugins
+          name: plugins
       volumes:
-        - name: plugins
-          emptyDir: {}
+      - name: plugins
+        emptyDir: {}
