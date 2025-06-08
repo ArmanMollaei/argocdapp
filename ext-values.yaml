@@ -31,14 +31,14 @@ configuration:
       config:
         path: /data/velero/backups
       accessMode: ReadWrite
-
+      
   volumeSnapshotLocation:
     - name: default
       provider: openebs.io/localpath
       config: {}
 
   defaultBackupStorageLocation: default
-  defaultVolumeSnapshotLocations: openebs.io/localpath=default
+  defaultVolumeSnapshotLocations: default
 deployNodeAgent: false
 
 upgradeCRDs: true
