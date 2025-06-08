@@ -36,9 +36,6 @@ configuration:
     - name: default
       provider: openebs.io/localpath
       config: {}
-
-  defaultBackupStorageLocation: default
-  defaultVolumeSnapshotLocations: default
 deployNodeAgent: false
 
 upgradeCRDs: true
